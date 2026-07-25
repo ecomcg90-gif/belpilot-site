@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BelPilot — Jouw AI belt. Jij leeft.</title>
+<meta name="description" content="BelPilot is de Nederlandse AI-belassistent die jouw afspraken, reserveringen en belklusjes regelt. Jij typt, BelPilot belt.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='23' y='34' width='54' height='42' rx='17' fill='%236366f1'/%3E%3Ccircle cx='40' cy='53' r='5.7' fill='%23fff'/%3E%3Ccircle cx='60' cy='53' r='5.7' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9ff;
+    --bg-2: #f2f0fc;
+    --tekst: #1b1846;
+    --tekst-zacht: #4a476e;
+    --tekst-dim: #8b88a8;
+    --indigo: #6366f1;
+    --indigo-diep: #4f46e5;
+    --violet: #7c3aed;
+    --roze: #db2777;
+    --kaart: #ffffff;
+    --kaart-rand: #e9e5fa;
+    --radius: 24px;
+    --space-1: 8px; --space-2: 16px; --space-3: 24px; --space-4: 40px;
+    --space-5: 64px; --space-6: 96px; --space-7: 152px;
+    --ease-uit: cubic-bezier(.16, 1, .3, 1);
+    --schaduw-zacht: 0 2px 10px rgba(27, 24, 70, .05), 0 14px 40px rgba(99, 102, 241, .08);
+    --schaduw-zweef: 0 6px 18px rgba(27, 24, 70, .08), 0 26px 60px rgba(99, 102, 241, .14);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--tekst);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--indigo); color: #fff; }
+  h1, h2, h3, .display { font-family: "Space Grotesk", sans-serif; letter-spacing: -.02em; }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; }
+  .container { width: min(1200px, 92vw); margin-inline: auto; }
+  .skip-link {
+    position: absolute; left: -9999px; top: 0; z-index: 1000;
+    background: var(--indigo-diep); color: #fff; padding: 12px 20px; border-radius: 0 0 12px 0;
+  }
+  .skip-link:focus { left: 0; }
+  :focus-visible { outline: 3px solid var(--indigo-diep); outline-offset: 3px; border-radius: 6px; }
+
+  /* ── Ambient glows (licht) ────────────────────────────── */
+  .glow { position: absolute; border-radius: 50%; filter: blur(110px); pointer-events: none; will-change: transform; }
+
+  /* ── Navigatie ────────────────────────────────────────── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    transition: transform .45s var(--ease-uit), background .3s;
+  }
+  .nav.verborgen { transform: translateY(-110%); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; margin: 14px auto; width: min(1200px, 94vw);
+    border-radius: 100px;
+    background: rgba(255, 255, 255, .75);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--kaart-rand);
+    box-shadow: var(--schaduw-zacht);
+  }
+  .merk { display: flex; align-items: center; gap: 12px; font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.25rem; }
+  .merk svg { width: 34px; height: 34px; }
+  .nav-links { display: flex; gap: 34px; font-size: .95rem; color: var(--tekst-zacht); }
+  .nav-links a { transition: color .2s; padding: 8px 2px; }
+  .nav-links a:hover { color: var(--indigo-diep); }
+  .knop {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 28px; border-radius: 100px; font-weight: 600; font-size: 1rem;
+    cursor: pointer; border: none; min-height: 48px;
+    transition: transform .25s var(--ease-uit), box-shadow .25s, background .25s;
+  }
+  .knop:active { transform: scale(.97); }
+  .knop-primair {
+    color: #fff;
+    background: linear-gradient(120deg, var(--indigo-diep), var(--violet) 60%, var(--roze) 140%);
+    box-shadow: 0 8px 26px rgba(99, 102, 241, .35);
+  }
+  .knop-primair:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(99, 102, 241, .45); }
+  .knop-licht {
+    color: var(--tekst); background: #fff; border: 1px solid var(--kaart-rand);
+    box-shadow: var(--schaduw-zacht);
+  }
+  .knop-licht:hover { border-color: #d5cef5; transform: translateY(-2px); }
+  .nav .knop { padding: 11px 22px; min-height: 44px; font-size: .92rem; }
+
+  /* ── Hero ─────────────────────────────────────────────── */
+  .hero {
+    position: relative; min-height: 100svh; overflow: clip;
+    display: grid; place-items: center; text-align: center;
+    padding: 150px 4vw 0;
+    background: linear-gradient(180deg, #f4f2ff 0%, var(--bg) 55%);
+  }
+  .hero .glow-1 { width: 60vw; height: 60vw; background: #c7d2fe; opacity: .55; top: -18vw; left: -14vw; }
+  .hero .glow-2 { width: 46vw; height: 46vw; background: #e9d5ff; opacity: .5; top: 4vw; right: -14vw; }
+  .hero .glow-3 { width: 34vw; height: 34vw; background: #fbcfe8; opacity: .38; bottom: -6vw; left: 30vw; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 9px 20px; border-radius: 100px; font-size: .88rem; font-weight: 500;
+    background: #fff; border: 1px solid var(--kaart-rand); color: var(--tekst-zacht);
+    box-shadow: var(--schaduw-zacht); margin-bottom: var(--space-3);
+  }
+  .hero-badge .stip { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, .7); }
+  .hero h1 {
+    font-size: clamp(3rem, 9.5vw, 8.2rem);
+    font-weight: 700; line-height: .98; letter-spacing: -.035em;
+    max-width: 12ch; margin-inline: auto;
+  }
+  .hero h1 .regel { display: block; overflow: hidden; }
+  .hero h1 .woord { display: inline-block; }
+  .gradient-tekst {
+    background: linear-gradient(100deg, var(--indigo-diep), var(--violet) 45%, var(--roze) 95%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero-sub {
+    margin: var(--space-3) auto 0; max-width: 52ch;
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--tekst-zacht);
+  }
+  .hero-acties { display: flex; gap: 16px; justify-content: center; margin-top: var(--space-4); flex-wrap: wrap; }
+  .hero-telefoon {
+    position: relative; margin: var(--space-5) auto -14vh; width: min(360px, 74vw);
+    will-change: transform;
+  }
+  .telefoon-frame {
+    border-radius: 52px; padding: 12px; background: #1b1930;
+    border: 1px solid rgba(27, 24, 70, .2);
+    box-shadow: 0 60px 120px rgba(27, 24, 70, .28), 0 24px 50px rgba(99, 102, 241, .18), inset 0 1px 2px rgba(255,255,255,.25);
+  }
+  .telefoon-frame img { border-radius: 41px; width: 100%; height: auto; aspect-ratio: 1290 / 2796; object-fit: cover; }
+  .hero-scrollhint {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    font-size: .8rem; letter-spacing: .22em; text-transform: uppercase; color: var(--tekst-dim);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .hero-scrollhint::after {
+    content: ""; width: 1px; height: 44px;
+    background: linear-gradient(to bottom, var(--violet), transparent);
+    animation: scrolllijn 1.8s var(--ease-uit) infinite;
+  }
+  @keyframes scrolllijn { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+  /* ── Zoom-sectie (het effect) ─────────────────────────── */
+  .zoom-sectie { position: relative; height: 320vh; }
+  .zoom-plakker {
+    position: sticky; top: 0; height: 100svh; overflow: clip;
+    display: grid; place-items: center; text-align: center;
+    background: linear-gradient(180deg, var(--bg), #f4f1ff 50%, var(--bg));
+  }
+  .zoom-plakker .glow-a { width: 55vw; height: 55vw; background: #ddd6fe; opacity: .6; top: 10%; left: -18vw; }
+  .zoom-plakker .glow-b { width: 45vw; height: 45vw; background: #fbcfe8; opacity: .4; bottom: -10%; right: -12vw; }
+  .zoom-tekst {
+    font-size: clamp(2.6rem, 8vw, 7rem); font-weight: 700; line-height: 1.04;
+    letter-spacing: -.03em; will-change: transform, opacity; max-width: 15ch;
+  }
+  .zoom-tekst-2 { position: absolute; inset: 0; display: grid; place-items: center; padding: 0 6vw; }
+  .zoom-tekst-2 .binnen { max-width: 800px; }
+  .zoom-tekst-2 h2 { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; margin-bottom: var(--space-3); }
+  .zoom-tekst-2 p { color: var(--tekst-zacht); font-size: clamp(1.05rem, 1.5vw, 1.25rem); max-width: 46ch; margin-inline: auto; }
+
+  /* ── Marquee ──────────────────────────────────────────── */
+  .marquee { padding: var(--space-4) 0; border-block: 1px solid var(--kaart-rand); overflow: hidden; background: var(--bg-2); }
+  .marquee-baan { display: flex; width: max-content; animation: marquee 30s linear infinite; }
+  .marquee-groep { display: flex; align-items: center; gap: 3.2rem; padding-right: 3.2rem; }
+  .marquee-item {
+    font-family: "Space Grotesk", sans-serif; font-weight: 600;
+    font-size: clamp(1.4rem, 3vw, 2.2rem); color: #b4b0d0; white-space: nowrap;
+  }
+  .marquee-item.aan { color: var(--tekst); }
+  .marquee-ster { width: 14px; height: 14px; color: var(--indigo); flex: none; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee:hover .marquee-baan { animation-play-state: paused; }
+
+  /* ── Secties algemeen ─────────────────────────────────── */
+  .sectie { position: relative; padding: var(--space-7) 0; }
+  .sectie-kop { max-width: 720px; margin-bottom: var(--space-6); }
+  .sectie-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: .82rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--indigo-diep); margin-bottom: var(--space-2);
+  }
+  .sectie-label::before { content: ""; width: 28px; height: 1px; background: var(--indigo); }
+  .sectie-kop h2 { font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.06; }
+  .sectie-kop p { margin-top: var(--space-2); color: var(--tekst-zacht); font-size: 1.15rem; max-width: 54ch; }
+
+  /* ── Stappen ──────────────────────────────────────────── */
+  .stappen { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+  .stap {
+    position: relative; padding: var(--space-4) var(--space-3) var(--space-3);
+    border-radius: var(--radius); overflow: hidden;
+    background: var(--kaart); border: 1px solid var(--kaart-rand);
+    box-shadow: var(--schaduw-zacht);
+    transition: transform .35s var(--ease-uit), box-shadow .3s, border-color .3s;
+  }
+  .stap:hover { transform: translateY(-6px); box-shadow: var(--schaduw-zweef); border-color: #d5cef5; }
+  .stap-nummer {
+    font-family: "Space Grotesk", sans-serif; font-size: 4.6rem; font-weight: 700; line-height: 1;
+    background: linear-gradient(160deg, var(--indigo), rgba(124, 58, 237, .35));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .stap h3 { font-size: 1.4rem; margin: var(--space-2) 0 10px; }
+  .stap p { color: var(--tekst-zacht); font-size: 1rem; }
+
+  /* ── Bento ────────────────────────────────────────────── */
+  .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); }
+  .kaart {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    background: var(--kaart); border: 1px solid var(--kaart-rand);
+    padding: var(--space-4) var(--space-3);
+    box-shadow: var(--schaduw-zacht);
+    transition: transform .35s var(--ease-uit), box-shadow .3s, border-color .3s;
+  }
+  .kaart::before {
+    content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .4s;
+    background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(99, 102, 241, .09), transparent 45%);
+    pointer-events: none;
+  }
+  .kaart:hover::before { opacity: 1; }
+  .kaart:hover { transform: translateY(-4px); box-shadow: var(--schaduw-zweef); border-color: #d5cef5; }
+  .kaart-groot { grid-column: span 4; }
+  .kaart-klein { grid-column: span 2; }
+  .kaart-half { grid-column: span 3; }
+  .kaart-icoon {
+    width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+    background: linear-gradient(140deg, #eef2ff, #fdf2f8);
+    border: 1px solid #e0e7ff; margin-bottom: var(--space-3);
+  }
+  .kaart-icoon svg { width: 26px; height: 26px; color: var(--indigo-diep); }
+  .kaart h3 { font-size: 1.35rem; margin-bottom: 8px; }
+  .kaart p { color: var(--tekst-zacht); max-width: 46ch; }
+
+  /* ── Gesprek-demo ─────────────────────────────────────── */
+  .demo { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); align-items: center; }
+  .demo-telefoon { width: min(340px, 80vw); margin-inline: auto; will-change: transform; }
+  .chat { display: flex; flex-direction: column; gap: 14px; }
+  .bel {
+    max-width: 85%; padding: 16px 20px; border-radius: 20px; font-size: 1.02rem; line-height: 1.5;
+    border: 1px solid var(--kaart-rand); box-shadow: var(--schaduw-zacht);
+  }
+  .bel-ai { align-self: flex-start; background: #eef2ff; border-color: #dbe3ff; border-bottom-left-radius: 6px; }
+  .bel-ander { align-self: flex-end; background: #fff; border-bottom-right-radius: 6px; color: var(--tekst-zacht); }
+  .bel-naam { display: block; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--tekst-dim); margin-bottom: 5px; }
+  .chat-resultaat {
+    margin-top: 10px; padding: 18px 22px; border-radius: 18px;
+    background: #ecfdf5; border: 1px solid #a7f3d0;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .chat-resultaat svg { width: 26px; height: 26px; color: #059669; flex: none; }
+
+  /* ── Stats ────────────────────────────────────────────── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); text-align: center; }
+  .stat { padding: var(--space-4) var(--space-2); border-radius: var(--radius); background: var(--kaart); border: 1px solid var(--kaart-rand); box-shadow: var(--schaduw-zacht); }
+  .stat-cijfer {
+    font-family: "Space Grotesk", sans-serif; font-size: clamp(2.6rem, 5vw, 4rem); font-weight: 700;
+    background: linear-gradient(120deg, var(--indigo-diep), var(--roze)); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat p { color: var(--tekst-zacht); margin-top: 6px; }
+
+  /* ── Prijzen ──────────────────────────────────────────── */
+  .prijzen { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); align-items: stretch; }
+  .prijs {
+    position: relative; border-radius: 28px; padding: var(--space-4) var(--space-3);
+    background: var(--kaart); border: 1px solid var(--kaart-rand);
+    box-shadow: var(--schaduw-zacht);
+    display: flex; flex-direction: column; gap: var(--space-2);
+    transition: transform .35s var(--ease-uit), box-shadow .3s;
+  }
+  .prijs:hover { transform: translateY(-6px); box-shadow: var(--schaduw-zweef); }
+  .prijs-favoriet {
+    background: linear-gradient(170deg, #eef2ff, #fdf5ff 70%);
+    border-color: #c7d2fe;
+    box-shadow: 0 24px 70px rgba(99, 102, 241, .2);
+  }
+  .prijs-tag {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    padding: 6px 16px; border-radius: 100px; font-size: .78rem; font-weight: 600; letter-spacing: .06em;
+    background: linear-gradient(100deg, var(--indigo-diep), var(--roze)); color: #fff; white-space: nowrap;
+  }
+  .prijs h3 { font-size: 1.3rem; }
+  .prijs-bedrag { font-family: "Space Grotesk", sans-serif; font-size: 3rem; font-weight: 700; line-height: 1; }
+  .prijs-bedrag small { font-size: 1rem; font-weight: 500; color: var(--tekst-dim); font-family: "Inter", sans-serif; }
+  .prijs ul { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-block: var(--space-1) var(--space-2); }
+  .prijs li { display: flex; gap: 12px; align-items: flex-start; color: var(--tekst-zacht); font-size: .98rem; }
+  .prijs li svg { width: 20px; height: 20px; color: #059669; flex: none; margin-top: 2px; }
+  .prijs .knop { margin-top: auto; }
+  .prijs-gratis { text-align: center; margin-top: var(--space-3); color: var(--tekst-dim); font-size: .95rem; }
+
+  /* ── Finale CTA ───────────────────────────────────────── */
+  .finale { position: relative; padding: var(--space-7) 0; text-align: center; overflow: clip; background: linear-gradient(180deg, var(--bg), #f1edff); }
+  .finale .glow-f { width: 70vw; height: 70vw; background: #ddd6fe; opacity: .55; left: 15vw; top: -10vw; }
+  .finale h2 { font-size: clamp(2.8rem, 7.5vw, 6rem); line-height: 1.02; max-width: 14ch; margin: 0 auto var(--space-3); }
+  .finale p { color: var(--tekst-zacht); font-size: 1.2rem; max-width: 44ch; margin: 0 auto var(--space-4); }
+
+  /* ── Footer ───────────────────────────────────────────── */
+  footer { border-top: 1px solid var(--kaart-rand); padding: var(--space-5) 0 var(--space-4); background: var(--bg-2); }
+  .voet-grid { display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; align-items: flex-start; }
+  .voet-links { display: flex; gap: 30px; color: var(--tekst-zacht); font-size: .95rem; flex-wrap: wrap; }
+  .voet-links a:hover { color: var(--indigo-diep); }
+  .voet-copy { margin-top: var(--space-4); color: var(--tekst-dim); font-size: .88rem; }
+
+  /* ── Reveal-status (JS zet op) ────────────────────────── */
+  .reveal { will-change: transform, opacity; }
+
+  /* ── Responsief ───────────────────────────────────────── */
+  @media (max-width: 980px) {
+    .stappen, .stats, .prijzen { grid-template-columns: 1fr; }
+    .kaart-groot, .kaart-klein, .kaart-half { grid-column: span 6; }
+    .demo { grid-template-columns: 1fr; gap: var(--space-4); }
+    .nav-links { display: none; }
+    .sectie { padding: var(--space-6) 0; }
+    .zoom-sectie { height: 260vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .zoom-sectie { height: auto; }
+    .zoom-plakker { position: relative; height: auto; padding: var(--space-7) 6vw; }
+    .zoom-tekst { display: none; }
+    .zoom-tekst-2 { position: relative; }
+    .hero-telefoon { margin-bottom: var(--space-5); }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#inhoud">Naar de inhoud</a>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="merk" href="#" aria-label="BelPilot home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><line x1="50" y1="34" x2="50" y2="27.5" stroke="#8b5cf6" stroke-width="4.6" stroke-linecap="round"/><circle cx="50" cy="22" r="5.4" fill="#8b5cf6"/><rect x="23" y="34" width="54" height="42" rx="17" fill="url(#lg)"/><circle cx="40" cy="53" r="5.7" fill="#fff"/><circle cx="60" cy="53" r="5.7" fill="#fff"/><path d="M40 63q10 7 20 0" stroke="#fff" stroke-width="4.2" stroke-linecap="round" fill="none"/></svg>
+      BelPilot
+    </a>
+    <nav class="nav-links" aria-label="Hoofdnavigatie">
+      <a href="#hoe">Hoe het werkt</a>
+      <a href="#functies">Functies</a>
+      <a href="#prijzen">Prijzen</a>
+    </nav>
+    <a class="knop knop-primair" href="#prijzen">Download de app</a>
+  </div>
+</header>
+
+<main id="inhoud">
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" aria-label="Introductie">
+    <div class="glow glow-1" data-parallax="0.25"></div>
+    <div class="glow glow-2" data-parallax="0.45"></div>
+    <div class="glow glow-3" data-parallax="0.6"></div>
+    <div>
+      <p class="hero-badge reveal-badge"><span class="stip" aria-hidden="true"></span> Nu beschikbaar in Nederland</p>
+      <h1 id="hero-titel">
+        <span class="regel"><span class="woord">Nooit</span> <span class="woord">meer</span></span>
+        <span class="regel"><span class="woord gradient-tekst">zelf</span> <span class="woord gradient-tekst">bellen.</span></span>
+      </h1>
+      <p class="hero-sub reveal-sub">BelPilot is jouw persoonlijke AI-belassistent. Vertel wat er geregeld moet worden — een afspraak, reservering of vraag — en BelPilot belt het voor je. Met een vriendelijke stem, uit jouw naam.</p>
+      <div class="hero-acties reveal-sub">
+        <a class="knop knop-primair" href="#prijzen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.98-.2 1.92-.87 3.24-.77 1.58.13 2.77.75 3.55 1.87-3.27 1.96-2.5 6.27.55 7.5-.6 1.28-1.38 2.55-2.42 3.57zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Download in de App Store
+        </a>
+        <a class="knop knop-licht" href="#hoe">Bekijk hoe het werkt</a>
+      </div>
+    </div>
+    <div class="hero-telefoon" id="hero-telefoon">
+      <div class="telefoon-frame">
+        <img src="assets/app-licht.png" alt="BelPilot-app met begroeting en geplande beltaken" width="1290" height="2796" fetchpriority="high">
+      </div>
+    </div>
+    <p class="hero-scrollhint" aria-hidden="true">scroll</p>
+  </section>
+
+  <!-- ═══ ZOOM ═══ -->
+  <section class="zoom-sectie" aria-label="BelPilot belt voor jou">
+    <div class="zoom-plakker">
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+      <p class="zoom-tekst display" id="zoom-tekst">Jij typt.<br><span class="gradient-tekst">BelPilot belt.</span></p>
+      <div class="zoom-tekst-2" id="zoom-tekst-2">
+        <div class="binnen">
+          <h2>Een echte AI-stem die <span class="gradient-tekst">namens jou</span> het gesprek voert</h2>
+          <p>Kapper, tandarts, garage of restaurant — BelPilot stelt zich voor, regelt jouw verzoek en meldt het resultaat met een transcript in de app. Jij hoeft nooit meer in de wacht.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MARQUEE ═══ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-baan">
+      <div class="marquee-groep">
+        <span class="marquee-item aan">Huisarts</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Kapper</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item aan">Restaurant</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Garage</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item aan">Tandarts</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Klantenservice</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+      </div>
+      <div class="marquee-groep">
+        <span class="marquee-item aan">Huisarts</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Kapper</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item aan">Restaurant</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Garage</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item aan">Tandarts</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+        <span class="marquee-item">Klantenservice</span><svg class="marquee-ster" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HOE HET WERKT ═══ -->
+  <section class="sectie" id="hoe" aria-label="Hoe het werkt">
+    <div class="container">
+      <div class="sectie-kop reveal">
+        <p class="sectie-label">Hoe het werkt</p>
+        <h2>Van gedachte naar geregeld,<br>in <span class="gradient-tekst">drie stappen</span></h2>
+      </div>
+      <div class="stappen">
+        <article class="stap reveal">
+          <p class="stap-nummer" aria-hidden="true">01</p>
+          <h3>Vertel je klusje</h3>
+          <p>Typ of spreek in wat er geregeld moet worden. "Maak een knipafspraak voor zaterdagochtend" is genoeg.</p>
+        </article>
+        <article class="stap reveal">
+          <p class="stap-nummer" aria-hidden="true">02</p>
+          <h3>BelPilot belt</h3>
+          <p>Direct, of gepland op het moment dat jij kiest. De assistent stelt zich netjes voor en regelt jouw verzoek — desgewenst met jouw eigen nummer in beeld.</p>
+        </article>
+        <article class="stap reveal">
+          <p class="stap-nummer" aria-hidden="true">03</p>
+          <h3>Jij krijgt het resultaat</h3>
+          <p>Een melding, een korte samenvatting en het volledige transcript. Afspraak staat. Klaar terwijl jij iets leukers deed.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DEMO ═══ -->
+  <section class="sectie" style="background: var(--bg-2); border-block: 1px solid var(--kaart-rand);" aria-label="Voorbeeldgesprek">
+    <div class="container demo">
+      <div>
+        <div class="sectie-kop reveal" style="margin-bottom: var(--space-4);">
+          <p class="sectie-label">Live voorbeeld</p>
+          <h2>Zo klinkt<br><span class="gradient-tekst">geregeld</span></h2>
+        </div>
+        <div class="chat">
+          <p class="bel bel-ai reveal"><span class="bel-naam">BelPilot</span>Goedemiddag! U spreekt met de digitale assistent van Henk. Ik bel om een knipafspraak te maken, het liefst zaterdagochtend.</p>
+          <p class="bel bel-ander reveal"><span class="bel-naam">Kapper Mooi Haar</span>Zaterdag om 10:30 hebben we nog een plekje vrij.</p>
+          <p class="bel bel-ai reveal"><span class="bel-naam">BelPilot</span>Dat past perfect. Zet maar op naam van Henk. Dank u wel!</p>
+          <p class="chat-resultaat reveal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            <span><strong>Afspraak gelukt</strong> — zaterdag 10:30 · samenvatting &amp; transcript in de app</span>
+          </p>
+        </div>
+      </div>
+      <div class="demo-telefoon" id="demo-telefoon">
+        <div class="telefoon-frame">
+          <img src="assets/app-beltaak.png" alt="Nieuwe beltaak aanmaken in BelPilot" width="1290" height="2796" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FUNCTIES / BENTO ═══ -->
+  <section class="sectie" id="functies" aria-label="Functies">
+    <div class="container">
+      <div class="sectie-kop reveal">
+        <p class="sectie-label">Functies</p>
+        <h2>Alles om het bellen<br><span class="gradient-tekst">uit handen te geven</span></h2>
+      </div>
+      <div class="bento">
+        <article class="kaart kaart-groot reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <h3>Bel met je eigen nummer</h3>
+          <p>Verifieer je eigen 06-nummer en de gebelde ziet gewoon jóuw nummer in beeld — geen onbekend nummer, geen "spam"-gevoel. Uniek in Nederland.</p>
+        </article>
+        <article class="kaart kaart-klein reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h3>Plan vooruit</h3>
+          <p>Zet een beltaak klaar voor later. BelPilot belt stipt op tijd — ook als je telefoon in je zak zit.</p>
+        </article>
+        <article class="kaart kaart-half reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <h3>Transcript &amp; samenvatting</h3>
+          <p>Elk gesprek wordt live uitgeschreven. Jij leest in één oogopslag wat er is afgesproken.</p>
+        </article>
+        <article class="kaart kaart-half reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10"/><path d="M12 6v6l4 2"/><path d="m17 22 5-5"/><path d="M22 22v-5h-5"/></svg></div>
+          <h3>Slimme wachtrij</h3>
+          <p>Druk moment? Beltaken schuiven automatisch netjes op en krijgen een herkansing bij geen gehoor.</p>
+        </article>
+        <article class="kaart kaart-klein reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></div>
+          <h3>Licht &amp; donker</h3>
+          <p>Strak Nederlands design in beide smaken. Eén schuifje in de instellingen.</p>
+        </article>
+        <article class="kaart kaart-groot reveal">
+          <div class="kaart-icoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></div>
+          <h3>Privacy voorop</h3>
+          <p>Anoniem account, versleutelde verbindingen en jouw gegevens alleen voor jou. Verwijderen kan altijd, met één knop. Nederlandse nuchterheid, AVG-proof.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ STATS ═══ -->
+  <section class="sectie" style="padding-top: 0;" aria-label="Cijfers">
+    <div class="container stats">
+      <div class="stat reveal"><p class="stat-cijfer"><span data-teller="30">0</span> sec</p><p>van gedachte naar lopende beltaak</p></div>
+      <div class="stat reveal"><p class="stat-cijfer"><span data-teller="5">0</span> gratis</p><p>beltaken voor iedere nieuwe gebruiker</p></div>
+      <div class="stat reveal"><p class="stat-cijfer">100% NL</p><p>gebouwd voor Nederland, in het Nederlands</p></div>
+    </div>
+  </section>
+
+  <!-- ═══ PRIJZEN ═══ -->
+  <section class="sectie" id="prijzen" style="background: var(--bg-2); border-block: 1px solid var(--kaart-rand);" aria-label="Prijzen">
+    <div class="container">
+      <div class="sectie-kop reveal" style="text-align:center; margin-inline:auto;">
+        <p class="sectie-label" style="justify-content:center;">Prijzen</p>
+        <h2>Eerst gratis proberen,<br>daarna <span class="gradient-tekst">vanaf € 7,99</span></h2>
+        <p style="margin-inline:auto;">Begin met 5 gratis beltaken. Kies daarna het abonnement dat bij je past — maandelijks opzegbaar via de App Store.</p>
+      </div>
+      <div class="prijzen">
+        <article class="prijs reveal">
+          <h3>Pro</h3>
+          <p class="prijs-bedrag">€ 7,99 <small>/ maand</small></p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>15 beltaken per maand</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Onbeperkt wachtrij-zitten</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Transcripten &amp; meldingen</li>
+          </ul>
+          <a class="knop knop-licht" href="#">Kies Pro</a>
+        </article>
+        <article class="prijs prijs-favoriet reveal">
+          <p class="prijs-tag">Meest gekozen</p>
+          <h3>Pro Plus</h3>
+          <p class="prijs-bedrag">€ 19,99 <small>/ maand</small></p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>50 beltaken per maand</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Onbeperkt wachtrij-zitten</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Bel met je eigen nummer</li>
+          </ul>
+          <a class="knop knop-primair" href="#">Kies Pro Plus</a>
+        </article>
+        <article class="prijs reveal">
+          <h3>Pro Business</h3>
+          <p class="prijs-bedrag">€ 119,99 <small>/ maand</small></p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>300 beltaken per maand</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Voor teams &amp; ondernemers</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Alles uit Pro Plus</li>
+          </ul>
+          <a class="knop knop-licht" href="#">Kies Business</a>
+        </article>
+      </div>
+      <p class="prijs-gratis">Prijzen incl. btw · betaling &amp; opzeggen via je Apple-account</p>
+    </div>
+  </section>
+
+  <!-- ═══ FINALE ═══ -->
+  <section class="finale" aria-label="Download">
+    <div class="glow glow-f" data-parallax="0.3"></div>
+    <div class="container">
+      <h2 class="reveal">Geef het bellen<br><span class="gradient-tekst">uit handen.</span></h2>
+      <p class="reveal">Download BelPilot en laat je eerste 5 belklusjes gratis regelen. Vandaag nog.</p>
+      <div class="hero-acties reveal">
+        <a class="knop knop-primair" href="#" style="font-size:1.1rem; padding: 18px 36px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.98-.2 1.92-.87 3.24-.77 1.58.13 2.77.75 3.55 1.87-3.27 1.96-2.5 6.27.55 7.5-.6 1.28-1.38 2.55-2.42 3.57zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Download in de App Store
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="voet-grid">
+      <a class="merk" href="#" aria-label="BelPilot home">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><line x1="50" y1="34" x2="50" y2="27.5" stroke="#8b5cf6" stroke-width="4.6" stroke-linecap="round"/><circle cx="50" cy="22" r="5.4" fill="#8b5cf6"/><rect x="23" y="34" width="54" height="42" rx="17" fill="#6366f1"/><circle cx="40" cy="53" r="5.7" fill="#fff"/><circle cx="60" cy="53" r="5.7" fill="#fff"/><path d="M40 63q10 7 20 0" stroke="#fff" stroke-width="4.2" stroke-linecap="round" fill="none"/></svg>
+        BelPilot
+      </a>
+      <nav class="voet-links" aria-label="Voettekst">
+        <a href="privacy.html">Privacyverklaring</a>
+        <a href="voorwaarden.html">Gebruiksvoorwaarden</a>
+        <a href="mailto:ecomcg90@gmail.com">Contact</a>
+      </nav>
+    </div>
+    <p class="voet-copy">© 2026 BelPilot · Gemaakt in Nederland · www.belpilot.com</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+  const beperkt = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Nav verbergen bij omlaag scrollen (altijd, ook zonder GSAP) */
+  const nav = document.getElementById('nav');
+  let vorigeY = 0;
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    nav.classList.toggle('verborgen', y > 140 && y > vorigeY);
+    vorigeY = y;
+  }, { passive: true });
+
+  /* Spotlight-positie op bento-kaarten */
+  document.querySelectorAll('.kaart').forEach(k => {
+    k.addEventListener('pointermove', e => {
+      const r = k.getBoundingClientRect();
+      k.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      k.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  if (beperkt || typeof gsap === 'undefined') return; // inhoud blijft volledig leesbaar
+
+  gsap.registerPlugin(ScrollTrigger);
+  const easeUit = 'expo.out';
+
+  /* ── Hero-intro: woorden omhoog, badge/sub/telefoon erna ── */
+  gsap.from('#hero-titel .woord', { yPercent: 110, duration: 1.1, ease: easeUit, stagger: .08, delay: .15 });
+  gsap.from('.reveal-badge', { autoAlpha: 0, y: 18, duration: .8, ease: easeUit, delay: .1 });
+  gsap.from('.reveal-sub', { autoAlpha: 0, y: 26, duration: .9, ease: easeUit, stagger: .12, delay: .55 });
+  gsap.from('#hero-telefoon', { autoAlpha: 0, y: 90, scale: .92, duration: 1.3, ease: easeUit, delay: .7 });
+
+  /* ── Hero-telefoon zoomt terwijl je scrolt ── */
+  gsap.to('#hero-telefoon', {
+    scale: 1.14, yPercent: -6, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: .6 }
+  });
+
+  /* ── Parallax-glows ── */
+  document.querySelectorAll('[data-parallax]').forEach(el => {
+    gsap.to(el, {
+      yPercent: -40 * parseFloat(el.dataset.parallax), ease: 'none',
+      scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  /* ── DE zoom: tekst schaalt het scherm in, tweede laag verschijnt ── */
+  const zoomTl = gsap.timeline({
+    scrollTrigger: { trigger: '.zoom-sectie', start: 'top top', end: 'bottom bottom', scrub: .5 }
+  });
+  zoomTl
+    .fromTo('#zoom-tekst', { scale: .55, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .18, ease: 'power2.out' })
+    .to('#zoom-tekst', { scale: 9, autoAlpha: 0, duration: .5, ease: 'power2.in' }, '+=.06')
+    .fromTo('#zoom-tekst-2', { autoAlpha: 0, scale: .9 }, { autoAlpha: 1, scale: 1, duration: .26, ease: 'power2.out' }, '-=.12');
+  gsap.set('#zoom-tekst-2', { autoAlpha: 0 });
+
+  /* ── Scroll-reveals ── */
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.from(el, {
+      autoAlpha: 0, y: 48, duration: 1, ease: easeUit,
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  /* ── Demo-telefoon parallax ── */
+  gsap.from('#demo-telefoon', {
+    y: 120, rotate: 3, ease: 'none',
+    scrollTrigger: { trigger: '#demo-telefoon', start: 'top bottom', end: 'top 30%', scrub: .5 }
+  });
+
+  /* ── Tellers ── */
+  document.querySelectorAll('[data-teller]').forEach(el => {
+    const doel = parseInt(el.dataset.teller, 10);
+    const obj = { n: 0 };
+    gsap.to(obj, {
+      n: doel, duration: 1.4, ease: 'power3.out',
+      onUpdate: () => { el.textContent = Math.round(obj.n); },
+      scrollTrigger: { trigger: el, start: 'top 90%' }
+    });
+  });
+})();
+</script>
+</body>
+</html>
