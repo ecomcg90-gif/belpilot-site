@@ -28,7 +28,7 @@
 
 <main class="juridisch">
   <h1>Privacyverklaring</h1>
-  <p class="bijgewerkt">Laatst bijgewerkt: 25 juli 2026</p>
+  <p class="bijgewerkt">Laatst bijgewerkt: 26 juli 2026</p>
 
   <p>BelPilot is een Nederlandse app waarmee een digitale assistent namens jou telefoongesprekken voert — bijvoorbeeld om een afspraak te maken of iets te reserveren. Om dat te kunnen doen verwerken we persoonsgegevens. In deze verklaring lees je welke dat zijn, waarom we ze verwerken en welke rechten je hebt volgens de Algemene Verordening Gegevensbescherming (AVG).</p>
 
@@ -41,7 +41,9 @@
     <li><strong>Profielgegevens die jij invult:</strong> je voor- en achternaam (zodat de assistent zich namens jou kan voorstellen) en optioneel je eigen telefoonnummer (nodig voor de functie "Verbind mij door").</li>
     <li><strong>Afzendernummer (optioneel):</strong> kies je ervoor om gesprekken jouw eigen nummer te laten tonen, dan verifiëren we eerst dat het nummer echt van jou is: je wordt automatisch gebeld en toetst een code in. Daarna gebruiken we dat nummer als afzender ("nummerweergave") van de gesprekken die BelPilot namens jou voert. Je kunt deze koppeling ongedaan maken door je gegevens te verwijderen.</li>
     <li><strong>Beltaakgegevens:</strong> de naam en het telefoonnummer van degene die gebeld moet worden, je opdracht (bijvoorbeeld "maak een knipafspraak") en het gewenste belmoment.</li>
-    <li><strong>Gespreksgegevens:</strong> tijdens het gesprek wordt de audio realtime verwerkt door onze AI-belpartner en omgezet in tekst. We bewaren het transcript en een korte samenvatting van het resultaat in je app.</li>
+    <li><strong>Gespreksgegevens:</strong> tijdens het gesprek wordt de audio verwerkt door onze AI-belpartner en omgezet in tekst. We bewaren het transcript en een korte samenvatting van het resultaat in je app.</li>
+    <li><strong>Geluidsopname van het gesprek:</strong> van elk gesprek dat BelPilot namens jou voert wordt een audio-opname gemaakt, die wordt bewaard bij onze AI-belpartner. Dat doen we om een gesprek te kunnen nakijken als er iets misgaat, om meldingen van misbruik te kunnen onderzoeken en om de kwaliteit van de assistent te bewaken. De assistent meldt aan het begin van elk gesprek dat hij een digitale assistent is die namens jou belt. Deze opnamen worden <strong>niet</strong> gebruikt om AI-modellen mee te trainen, niet gebruikt voor advertenties of profilering, en <strong>nooit</strong> verkocht of anderszins aan derden verstrekt. Verwijder je je account, dan worden ook de opnamen gewist.</li>
+    <li><strong>Gegevens voor misbruikpreventie:</strong> we leggen per belpoging vast welk nummer is gebeld en wanneer, ook als het gesprek niet tot stand kwam. Zo voorkomen we dat de dienst gebruikt wordt om iemand herhaaldelijk lastig te vallen. Om dezelfde reden wordt je opdracht automatisch gecontroleerd voordat er gebeld wordt.</li>
     <li><strong>Pushtoken:</strong> een technisch apparaat-token om je meldingen te kunnen sturen over het resultaat van je gesprekken.</li>
     <li><strong>Aankoopgegevens:</strong> bij een abonnement valideren we je App Store-aankoopbewijs bij Apple om je beltegoed toe te kennen. We zien nooit je betaalgegevens; de betaling loopt volledig via Apple.</li>
     <li><strong>Contacten (optioneel):</strong> als je een contact uit je adresboek kiest, gebruiken we alleen de naam en het nummer van dat ene contact voor die beltaak. We lezen of uploaden nooit je hele adresboek.</li>
@@ -53,7 +55,8 @@
     <tr><td>Het uitvoeren van jouw beltaken (bellen, transcriberen, resultaat tonen)</td><td>Uitvoering van de overeenkomst</td></tr>
     <tr><td>Pushmeldingen over het resultaat van je gesprekken</td><td>Uitvoering van de overeenkomst</td></tr>
     <tr><td>Abonnementsbeheer en toekennen van beltegoed</td><td>Uitvoering van de overeenkomst</td></tr>
-    <tr><td>Misbruikpreventie en het veilig houden van de dienst</td><td>Gerechtvaardigd belang</td></tr>
+    <tr><td>Misbruikpreventie en het veilig houden van de dienst: het automatisch controleren van opdrachten, het bijhouden van belpogingen en het bewaren van gespreksopnamen</td><td>Gerechtvaardigd belang (het beschermen van gebelde personen en van onze dienst tegen misbruik)</td></tr>
+    <tr><td>Het nakijken van een gesprek en het bewaken van de kwaliteit van de assistent</td><td>Gerechtvaardigd belang</td></tr>
     <tr><td>Toegang tot microfoon, spraakherkenning of contacten</td><td>Toestemming (via iOS-permissies, altijd intrekbaar)</td></tr>
   </table>
   <p>We gebruiken je gegevens <strong>niet</strong> voor advertenties, tracking of profilering, en we verkopen ze <strong>nooit</strong> aan derden.</p>
@@ -62,17 +65,21 @@
   <p>We werken met een klein aantal verwerkers die nodig zijn om de dienst te leveren:</p>
   <ul>
     <li><strong>Supabase</strong> — beveiligde database en accountinfrastructuur (opslag van je profiel, beltaken en transcripten).</li>
-    <li><strong>Vapi</strong> — de AI-belpartner die het telefoongesprek voert en de audio realtime omzet in tekst.</li>
+    <li><strong>Vapi</strong> — de AI-belpartner die het telefoongesprek voert, de audio omzet in tekst en de geluidsopname van het gesprek bewaart.</li>
+    <li><strong>OpenAI</strong> — controleert je opdracht automatisch op ontoelaatbare inhoud (zoals bedreiging of het zich voordoen als een bank of overheid) vóórdat er gebeld wordt. Alleen de tekst van je opdracht wordt hiervoor verstuurd; er gaan geen gespreksopnamen of transcripten naartoe. Deze gegevens worden niet gebruikt om modellen mee te trainen.</li>
     <li><strong>Twilio</strong> — telecompartner voor het verifiëren van je eigen telefoonnummer en het tonen daarvan als afzender, als je die functie inschakelt.</li>
     <li><strong>Apple</strong> — pushmeldingen (APNs) en de afhandeling van abonnementen via de App Store.</li>
   </ul>
+  <p>Met al deze partijen zijn we gebonden aan afspraken die hen verbieden jouw gegevens voor eigen doeleinden te gebruiken. Geen van hen mag je gegevens verkopen of aan anderen doorgeven.</p>
   <p>Ook krijgt de persoon of het bedrijf dat door BelPilot wordt gebeld uiteraard de informatie te horen die nodig is voor jouw verzoek (zoals je naam en de gewenste afspraak). Voor zover verwerkers gegevens buiten de Europese Economische Ruimte verwerken, gebeurt dat op basis van passende waarborgen zoals de standaardcontractbepalingen van de Europese Commissie.</p>
 
   <h2>5. Hoe lang bewaren we je gegevens?</h2>
   <ul>
     <li>Je profiel, beltaken en transcripten bewaren we zolang je de app gebruikt.</li>
-    <li>Verwijder je een beltaak in de app, dan verdwijnen ook het bijbehorende transcript en de samenvatting.</li>
-    <li>Wil je dat alles wordt gewist? Mail ons en we verwijderen je volledige account en alle bijbehorende gegevens.</li>
+    <li>Geluidsopnamen van gesprekken bewaren we maximaal 90 dagen, tenzij er een melding van misbruik loopt over een specifiek gesprek. Daarna worden ze automatisch verwijderd.</li>
+    <li>Gegevens over belpogingen (welk nummer, wanneer) bewaren we maximaal 12 maanden voor misbruikpreventie.</li>
+    <li>Verwijder je een beltaak in de app, dan verdwijnen ook het bijbehorende transcript, de samenvatting en de geluidsopname.</li>
+    <li>Wil je dat alles wordt gewist? Dat kan zelf in de app, via <strong>Instellingen → Verwijder al mijn gegevens</strong>. Je account, je transcripten en de geluidsopnamen van je gesprekken worden dan definitief verwijderd. Je kunt ons ook mailen als je liever wilt dat wij het doen.</li>
   </ul>
 
   <h2>6. Beveiliging</h2>
